@@ -1,0 +1,38 @@
+ip: 192.168.56.56
+memory: 2048
+cpus: 2
+provider: libvirt
+authorize: ~/.ssh/id_rsa.pub
+keys:
+    - ~/.ssh/id_rsa
+folders:
+    -
+        map: /data/8.Temp/4.renying/project
+        to: /home/vagrant/code
+        type: "nfs"
+        options:
+            nfs_version: 4
+            nfs_udp: false
+sites:
+    -
+        map: homestead.test
+        to: /home/vagrant/code/public
+        type: symfony4
+databases:
+    - homestead
+features:
+    -
+        mysql: true
+    -
+        mariadb: false
+    -
+        postgresql: false
+    -
+        ohmyzsh: false
+    -
+        webdriver: false
+services:
+    -
+        enabled: [mysql]
+name: project
+hostname: project
