@@ -1,4 +1,10 @@
 {
+    "doctrine/annotations": {
+        "version": "2.0",
+        "recipe": {
+            "version": "1.10"
+        }
+    },
     "doctrine/doctrine-bundle": {
         "version": "2.9",
         "recipe": {
@@ -25,6 +31,12 @@
             "config/packages/doctrine_migrations.yaml",
             "migrations/.gitignore"
         ]
+    },
+    "phpunit/phpunit": {
+        "version": "10.1",
+        "recipe": {
+            "version": "9.3"
+        }
     },
     "symfony/console": {
         "version": "6.1",
@@ -76,6 +88,12 @@
             "branch": "main",
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
+        }
+    },
+    "symfony/phpunit-bridge": {
+        "version": "6.2",
+        "recipe": {
+            "version": "5.3"
         }
     },
     "symfony/routing": {

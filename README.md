@@ -30,4 +30,8 @@ php bin/console doctrine:query:sql "select version();"
 mysql homestead < docs/interview_data.sql
 
 php bin/console make:controller
+
+composer require symfony/serializer-pack
+
+composer require --dev phpunit/phpunit
 ```

@@ -2,18 +2,33 @@
 
 namespace App\Controller;
 
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
+#[Route('/users', name: 'users')]
 class UserController extends AbstractController
 {
-    #[Route('/users', name: 'app_users')]
-    public function index(): JsonResponse
+    /**
+     * @param UserRepository $users
+     */
+    public function __construct(private UserRepository $users)
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/UserController.php',
-        ]);
+    }
+
+    #[Route(path: "", name: "all", methods: ["GET"])]
+    public function all(Request $request, SerializerInterface $serializer): JsonResponse
+    {
+        $active = $request->query->get('active', null);
+        $member = $request->query->get('member', null);
+        $begin = $request->query->get('begin', null);
+        $end = $request->query->get('end', null);
+        $type = $request->query->get('type', null);
+
+        $data = $this->users->findByCustom($active, $member, $begin, $end, $type);
+        return $this->json($serializer->normalize($data));
     }
 }

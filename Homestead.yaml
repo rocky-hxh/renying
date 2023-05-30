@@ -21,18 +21,21 @@ sites:
 databases:
     - homestead
 features:
-    -
-        mysql: true
-    -
-        mariadb: false
-    -
-        postgresql: false
-    -
-        ohmyzsh: false
-    -
-        webdriver: false
+    - mysql: true
+    - mariadb: false
+    - postgresql: false
+    - ohmyzsh: false
+    - webdriver: false
 services:
-    -
-        enabled: [mysql]
+    - enabled:
+        - "mysql"
+    - disabled:
+        - "postgresql"
+        - "postfix"
+        - "redis-server"
+        - "memcached"
+        - "containerd"
+        - "docker"
+        - "beanstalkd"
 name: project
 hostname: project
