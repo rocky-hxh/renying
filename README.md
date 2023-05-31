@@ -34,6 +34,7 @@ php bin/console make:entity
 
 composer require symfony/serializer-pack
 composer require symfony/validator
+composer require symfony/options-resolver
 
 composer require --dev phpunit/phpunit
 ```

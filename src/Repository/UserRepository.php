@@ -13,6 +13,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method User[]    findByCustom($active = null, $member = null, $begin = null, $end = null, $type = [])
  */
 class UserRepository extends ServiceEntityRepository
 {
@@ -44,25 +45,26 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
 
         $exprs = [];
-        if ($active !== null) {
+
+        if (!is_null($active)) {
             $exprs[] = $qb->expr()->eq('u.isActive', $active);
         }
-        if ($member !== null) {
+        if (!is_null($member)) {
             $exprs[] = $qb->expr()->eq('u.isMember', $member);
         }
-        if ($begin !== null) {
+        if (!is_null($begin)) {
             $exprs[] = $qb->expr()->gte('u.lastLoginAt', $begin);
         }
-        if ($end !== null) {
+        if (!is_null($end)) {
             $exprs[] = $qb->expr()->lte('u.lastLoginAt', $end);
         }
         if (!empty($type)) {
             $exprs[] = $qb->expr()->in('u.userType', $type);
         }
+
         if (!empty($exprs)) {
             $qb->where($qb->expr()->andX(...$exprs));
         }
-
         $qb->orderBy('u.id', 'ASC');
         return $qb->getQuery()->getResult();
     }

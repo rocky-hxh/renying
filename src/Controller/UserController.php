@@ -9,8 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[Route('/users', name: 'users')]
 class UserController extends AbstractController
@@ -23,16 +23,36 @@ class UserController extends AbstractController
     }
 
     #[Route(path: "", name: "all", methods: ["GET"])]
-    public function all(Request $request, SerializerInterface $serializer, ValidatorInterface $validator): JsonResponse
+    public function all(Request $request, SerializerInterface $serializer): JsonResponse
     {
-        $active = $request->query->get('active', null);
-        $member = $request->query->get('member', null);
-        $begin = $request->query->get('begin', null);
-        $end = $request->query->get('end', null);
-        $type = $request->query->get('type', null);
+        $resolver = new OptionsResolver();
+        $resolver->setDefaults([
+            'active' => null,
+            'member' => null,
+            'begin'  => null,
+            'end'    => null,
+            'type'   => null,
+        ]);
+        $resolver->setAllowedTypes('active', ['null', 'string']);
+        $resolver->setAllowedValues('active', ['0', '1']);
+        $resolver->setNormalizer('active', function (Options $options, $value) {
+            return $value;
+        });
+        $resolver->setAllowedTypes('member', ['null', 'string']);
+        $resolver->setAllowedValues('member', ['0', '1']);
 
-        $data = $this->users->findByCustom($active, $member, $begin, $end, $type);
+        try {
+            $options = $resolver->resolve($request->query->all());
+        } catch (\Exception $e) {
+            return $this->json([
+                'message' => $e->getMessage(),
+                'data' => [],
+            ]);
+        }
 
-        return $this->json($serializer->normalize($data));
+        $data = $this->users->findByCustom(...$options);
+        return $this->json([
+            'data' => $serializer->normalize($data)
+        ]);
     }
 }
