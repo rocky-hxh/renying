@@ -44,16 +44,16 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
 
         $exprs = [];
-        if ($active != null) {
+        if ($active !== null) {
             $exprs[] = $qb->expr()->eq('u.isActive', $active);
         }
-        if ($member != null) {
+        if ($member !== null) {
             $exprs[] = $qb->expr()->eq('u.isMember', $member);
         }
-        if ($begin != null) {
+        if ($begin !== null) {
             $exprs[] = $qb->expr()->gte('u.lastLoginAt', $begin);
         }
-        if ($end != null) {
+        if ($end !== null) {
             $exprs[] = $qb->expr()->lte('u.lastLoginAt', $end);
         }
         if (!empty($type)) {

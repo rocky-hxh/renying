@@ -10,18 +10,25 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table('test_users')]
 class User
 {
+    public const ACTIVE_STATUS = [0, 1];
+    public const MEMBER_STATUS = [0, 1];
+    public const USER_TYPES = [1, 2, 3];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\Choice(choices: User::ACTIVE_STATUS, message: 'Choose a valid active status.')]
     private ?bool $isActive = null;
 
     #[ORM\Column]
+    #[Assert\Choice(choices: User::MEMBER_STATUS, message: 'Choose a valid member status.')]
     private ?bool $isMember = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
+    #[Assert\Choice(choices: User::USER_TYPES, message: 'Choose a valid user type.')]
     private ?int $userType = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]

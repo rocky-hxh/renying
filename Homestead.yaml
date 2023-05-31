@@ -39,3 +39,4 @@ services:
         - "beanstalkd"
 name: project
 hostname: project
+natdnshostresolver: "off"

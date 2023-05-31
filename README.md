@@ -30,8 +30,14 @@ php bin/console doctrine:query:sql "select version();"
 mysql homestead < docs/interview_data.sql
 
 php bin/console make:controller
+php bin/console make:entity
 
 composer require symfony/serializer-pack
+composer require symfony/validator
 
 composer require --dev phpunit/phpunit
+```
+# tests
+```
+curl -s "http://homestead.test/users?active=1&member=1&type=1" | jq
 ```
