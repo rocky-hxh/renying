@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -13,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User[]    findAll()
  * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- * @method User[]    findByCustom($active = null, $member = null, $begin = null, $end = null, $type = [])
+ * @method User[]    findByCustom($options)
  */
 class UserRepository extends ServiceEntityRepository
 {
@@ -40,8 +41,69 @@ class UserRepository extends ServiceEntityRepository
         }
     }
 
-    public function findByCustom($active = null, $member = null, $begin = null, $end = null, $type = []): array
+    /**
+     * Query users via options.
+     *
+     * Filter Options:
+     *  active: ['null', '0', '1']; 'null' means option do not added or assigned
+     *  member: ['null', '0', '1'];
+     *  begin:  ['null', '<datetime>']
+     *  end:    ['null', '<datetime>']
+     *  type:   ['null', '1', '2', '3', '1,2', '1,3', '2,3', '1,2,3'];
+     *
+     */
+    public function findByCustom($options): array
     {
+        $resolver = new OptionsResolver();
+        $resolver->setDefaults([
+            'active' => null,
+            'member' => null,
+            'begin'  => null,
+            'end'    => null,
+            'type'   => null,
+        ]);
+        $resolver->setAllowedTypes('active', ['null', 'string']);
+        $resolver->setAllowedValues('active', [null, '0', '1']);
+        $resolver->setAllowedTypes('member', ['null', 'string']);
+        $resolver->setAllowedValues('member', [null, '0', '1']);
+        $resolver->setAllowedTypes('begin', ['null', 'string']);
+        $resolver->setAllowedValues('begin', function ($value) {
+            if (is_null($value)) {
+                return true;
+            }
+            try {
+                $t = new \DateTimeImmutable($value);
+            } catch (\Exception $e) {
+                return false;
+            }
+            return true;
+        });
+        $resolver->setAllowedValues('end', function ($value) {
+            if (is_null($value)) {
+                return true;
+            }
+            try {
+                $t = new \DateTimeImmutable($value);
+            } catch (\Exception $e) {
+                return false;
+            }
+            return true;
+        });
+        $resolver->setAllowedTypes('type', ['null', 'string']);
+        $resolver->setAllowedValues('type', function ($value) {
+            if (is_null($value)) {
+                return true;
+            }
+            $allows = ['1', '2', '3'];
+            $inputs = explode(',', $value);
+            $union = array_unique(array_merge($allows, $inputs));
+            return count($allows) == count($union);
+        });
+
+        $options = $resolver->resolve($options);
+
+        extract($options, EXTR_OVERWRITE);
+
         $qb = $this->createQueryBuilder('u');
         $expr = $qb->expr();
 

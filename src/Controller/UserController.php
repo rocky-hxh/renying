@@ -9,8 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\OptionsResolver\Options;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[Route('/users', name: 'users')]
 class UserController extends AbstractController
@@ -23,13 +21,13 @@ class UserController extends AbstractController
     }
 
     /**
-     * Filtered users.
+     * Filtered users via query parameters.
      *
-     * Filter Options:
-     *  active: ['null', '0', '1']; 'null' mean option do not added or assigned
+     * Query parameters:
+     *  active: ['null', '0', '1']; 'null' means parameter do not added or assigned
      *  member: ['null', '0', '1'];
-     *  begin:  ['null', '']
-     *  end:    ['null', '']
+     *  begin:  ['null', '<datetime>']
+     *  end:    ['null', '<datetime>']
      *  type:   ['null', '1', '2', '3', '1,2', '1,3', '2,3', '1,2,3'];
      *
      * Examples:
@@ -37,47 +35,10 @@ class UserController extends AbstractController
      *
      */
     #[Route(path: "", name: "all", methods: ["GET"])]
-    public function all(Request $request, SerializerInterface $serializer): JsonResponse
+    public function filtered(Request $request, SerializerInterface $serializer): JsonResponse
     {
-        $resolver = new OptionsResolver();
-        $resolver->setDefaults([
-            'active' => null,
-            'member' => null,
-            'begin'  => null,
-            'end'    => null,
-            'type'   => null,
-        ]);
-        $resolver->setAllowedTypes('active', ['null', 'string']);
-        $resolver->setAllowedValues('active', [null, '0', '1']);
-        $resolver->setAllowedTypes('member', ['null', 'string']);
-        $resolver->setAllowedValues('member', [null, '0', '1']);
-        $resolver->setAllowedTypes('begin', ['null', 'string']);
-        $resolver->setAllowedValues('begin', function ($value) {
-            try {
-                $t = new \DateTimeImmutable($value);
-            } catch (\Exception $e) {
-                return false;
-            }
-            return true;
-        });
-        $resolver->setAllowedValues('end', function ($value) {
-            try {
-                $t = new \DateTimeImmutable($value);
-            } catch (\Exception $e) {
-                return false;
-            }
-            return true;
-        });
-        $resolver->setAllowedTypes('type', ['null', 'string']);
-        $resolver->setAllowedValues('type', function ($value) {
-            $allows = ['1', '2', '3'];
-            $inputs = explode(',', $value);
-            $union = array_unique(array_merge($allows, $inputs));
-            return count($allows) == count($union);
-        });
-
         try {
-            $options = $resolver->resolve($request->query->all());
+            $data = $this->users->findByCustom($request->query->all());
         } catch (\Exception $e) {
             return $this->json([
                 'status' => 'error',
@@ -85,7 +46,6 @@ class UserController extends AbstractController
             ], 422);
         }
 
-        $data = $this->users->findByCustom(...$options);
         return $this->json([
             'data' => $serializer->normalize($data)
         ]);

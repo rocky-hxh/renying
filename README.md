@@ -33,10 +33,12 @@ php bin/console make:controller
 php bin/console make:entity
 
 composer require symfony/serializer-pack
-composer require symfony/validator
 composer require symfony/options-resolver
+composer require --dev symfony/test-pack
 
-composer require --dev phpunit/phpunit
+php bin/console make:test
+
+php bin/phpunit
 ```
 # tests
 ```
