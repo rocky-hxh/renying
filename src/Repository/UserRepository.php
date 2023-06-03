@@ -43,27 +43,43 @@ class UserRepository extends ServiceEntityRepository
     public function findByCustom($active = null, $member = null, $begin = null, $end = null, $type = []): array
     {
         $qb = $this->createQueryBuilder('u');
+        $expr = $qb->expr();
 
         $exprs = [];
-
+        $argIndex = 0;
         if (!is_null($active)) {
-            $exprs[] = $qb->expr()->eq('u.isActive', $active);
+            $argName = '?' . $argIndex;
+            $exprs[] = $expr->eq('u.isActive', $argName);
+            $qb->setParameter($argIndex, $active);
+            $argIndex++;
         }
         if (!is_null($member)) {
-            $exprs[] = $qb->expr()->eq('u.isMember', $member);
+            $argName = '?' . $argIndex;
+            $exprs[] = $expr->eq('u.isMember', $argName);
+            $qb->setParameter($argIndex, $member);
+            $argIndex++;
         }
         if (!is_null($begin)) {
-            $exprs[] = $qb->expr()->gte('u.lastLoginAt', $begin);
+            $argName = '?' . $argIndex;
+            $exprs[] = $expr->gte('u.lastLoginAt', $argName);
+            $qb->setParameter($argIndex, $begin);
+            $argIndex++;
         }
         if (!is_null($end)) {
-            $exprs[] = $qb->expr()->lte('u.lastLoginAt', $end);
+            $argName = '?' . $argIndex;
+            $exprs[] = $expr->lte('u.lastLoginAt', $argName);
+            $qb->setParameter($argIndex, $end);
+            $argIndex++;
         }
         if (!empty($type)) {
-            $exprs[] = $qb->expr()->in('u.userType', $type);
+            $argName = '?' . $argIndex;
+            $exprs[] = $expr->in('u.userType', $argName);
+            $qb->setParameter($argIndex, $type);
+            $argIndex++;
         }
 
         if (!empty($exprs)) {
-            $qb->where($qb->expr()->andX(...$exprs));
+            $qb->where($expr->andX(...$exprs));
         }
         $qb->orderBy('u.id', 'ASC');
         return $qb->getQuery()->getResult();

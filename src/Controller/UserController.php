@@ -22,6 +22,20 @@ class UserController extends AbstractController
     {
     }
 
+    /**
+     * Filtered users.
+     *
+     * Filter Options:
+     *  active: ['null', '0', '1']; 'null' mean option do not added or assigned
+     *  member: ['null', '0', '1'];
+     *  begin:  ['null', '']
+     *  end:    ['null', '']
+     *  type:   ['null', '1', '2', '3', '1,2', '1,3', '2,3', '1,2,3'];
+     *
+     * Examples:
+     *  /users?active=0&member=0&begin=2020-01-07&end=2021-12-31&type=2,3
+     *
+     */
     #[Route(path: "", name: "all", methods: ["GET"])]
     public function all(Request $request, SerializerInterface $serializer): JsonResponse
     {
@@ -34,20 +48,41 @@ class UserController extends AbstractController
             'type'   => null,
         ]);
         $resolver->setAllowedTypes('active', ['null', 'string']);
-        $resolver->setAllowedValues('active', ['0', '1']);
-        $resolver->setNormalizer('active', function (Options $options, $value) {
-            return $value;
-        });
+        $resolver->setAllowedValues('active', [null, '0', '1']);
         $resolver->setAllowedTypes('member', ['null', 'string']);
-        $resolver->setAllowedValues('member', ['0', '1']);
+        $resolver->setAllowedValues('member', [null, '0', '1']);
+        $resolver->setAllowedTypes('begin', ['null', 'string']);
+        $resolver->setAllowedValues('begin', function ($value) {
+            try {
+                $t = new \DateTimeImmutable($value);
+            } catch (\Exception $e) {
+                return false;
+            }
+            return true;
+        });
+        $resolver->setAllowedValues('end', function ($value) {
+            try {
+                $t = new \DateTimeImmutable($value);
+            } catch (\Exception $e) {
+                return false;
+            }
+            return true;
+        });
+        $resolver->setAllowedTypes('type', ['null', 'string']);
+        $resolver->setAllowedValues('type', function ($value) {
+            $allows = ['1', '2', '3'];
+            $inputs = explode(',', $value);
+            $union = array_unique(array_merge($allows, $inputs));
+            return count($allows) == count($union);
+        });
 
         try {
             $options = $resolver->resolve($request->query->all());
         } catch (\Exception $e) {
             return $this->json([
+                'status' => 'error',
                 'message' => $e->getMessage(),
-                'data' => [],
-            ]);
+            ], 422);
         }
 
         $data = $this->users->findByCustom(...$options);
